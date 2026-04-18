@@ -4,6 +4,8 @@ import morgan from "morgan";
 import errorHandler from "./middleware/errorHandler.js";
 
 import routes from "./routes/index.js";
+import userRoutes from "./routes/userRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const app = express();
 
@@ -13,7 +15,9 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 // Routes
-app.use("/api", routes);
+app.use("/", routes);
+app.use("/users", userRoutes);
+app.use("/products", productRoutes);
 
 // Error handler
 app.use(errorHandler);
