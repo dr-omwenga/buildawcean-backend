@@ -81,3 +81,64 @@ export const saveCart = async (req, res, next) => {
     next(err);
   }
 };
+
+export const addCartItem = async (req, res, next) => {
+  try {
+    const { productId, quantity } = req.body || {};
+
+    if (typeof productId !== "string" || productId.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "productId is required"
+      });
+    }
+
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+      return res.status(400).json({
+        success: false,
+        message: "quantity must be an integer between 1 and 10"
+      });
+    }
+
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    const existingCartItem = await CartItem.findByPk(productId);
+    if (existingCartItem) {
+      const updatedQuantity = existingCartItem.quantity + quantity;
+
+      if (updatedQuantity > 10) {
+        return res.status(400).json({
+          success: false,
+          message: "Final quantity cannot exceed 10"
+        });
+      }
+
+      existingCartItem.quantity = updatedQuantity;
+      await existingCartItem.save();
+
+      return res.status(200).json({
+        success: true,
+        data: existingCartItem
+      });
+    }
+
+    const createdCartItem = await CartItem.create({
+      productId,
+      quantity,
+      deliveryOptionId: "1"
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: createdCartItem
+    });
+  } catch (err) {
+    next(err);
+  }
+};
