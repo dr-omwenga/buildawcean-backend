@@ -9,6 +9,7 @@ import Product from "./src/models/product.js";
 import DeliveryOption from "./src/models/deliveryOption.js";
 import CartItem from "./src/models/cart.js";
 import { defaultDeliveryOptions } from "./defaultData/defaultDeliveryOptions.js";
+import { defaultCart } from "./defaultData/defaultCart.js";
 import fs from "fs";
 
 dotenv.config();
@@ -45,9 +46,8 @@ if (deliveryOptionCount === 0) {
 const cartItemCount = await CartItem.count();
 if (cartItemCount === 0) {
   try {
-    const cartData = JSON.parse(fs.readFileSync("./backend/cart.json", "utf8"));
-    if (Array.isArray(cartData) && cartData.length > 0) {
-      await CartItem.bulkCreate(cartData);
+    if (Array.isArray(defaultCart) && defaultCart.length > 0) {
+      await CartItem.bulkCreate(defaultCart);
       console.log("Default cart loaded into database");
     }
   } catch (error) {

@@ -1,4 +1,5 @@
 import CartItem from "../models/cart.js";
+import Product from "../models/product.js";
 
 const isValidCartItem = (item) => {
   if (!item || typeof item !== "object") {
@@ -15,6 +16,32 @@ const isValidCartItem = (item) => {
 export const getCart = async (req, res, next) => {
   try {
     const cartItems = await CartItem.findAll();
+    const expandValue = String(req.query.expand || "").toLowerCase();
+
+    if (expandValue === "product" || expandValue === "products") {
+      const productIds = [...new Set(cartItems.map((item) => item.productId))];
+      const products = await Product.findAll({
+        where: {
+          id: productIds
+        }
+      });
+
+      const productsById = new Map(
+        products.map((product) => [product.id, product.toJSON()])
+      );
+      const expandedCartItems = cartItems.map((item) => {
+        const productDetails = productsById.get(item.productId) || { id: item.productId };
+
+        return {
+          ...productDetails,
+          quantity: item.quantity,
+          deliveryOptionId: item.deliveryOptionId
+        };
+      });
+
+      return res.json({ success: true, data: expandedCartItems });
+    }
+
     res.json({ success: true, data: cartItems });
   } catch (err) {
     next(err);
