@@ -4,8 +4,10 @@ import sequelize from "./src/models/index.js";
 import "./src/models/user.js";
 import "./src/models/product.js";
 import "./src/models/deliveryOption.js";
+import "./src/models/cart.js";
 import Product from "./src/models/product.js";
 import DeliveryOption from "./src/models/deliveryOption.js";
+import CartItem from "./src/models/cart.js";
 import { defaultDeliveryOptions } from "./defaultData/defaultDeliveryOptions.js";
 import fs from "fs";
 
@@ -36,6 +38,20 @@ if (deliveryOptionCount === 0) {
     console.log("Default delivery options loaded into database");
   } catch (error) {
     console.error("Error loading default delivery options:", error);
+  }
+}
+
+// Load default cart if empty
+const cartItemCount = await CartItem.count();
+if (cartItemCount === 0) {
+  try {
+    const cartData = JSON.parse(fs.readFileSync("./backend/cart.json", "utf8"));
+    if (Array.isArray(cartData) && cartData.length > 0) {
+      await CartItem.bulkCreate(cartData);
+      console.log("Default cart loaded into database");
+    }
+  } catch (error) {
+    console.error("Error loading default cart:", error);
   }
 }
 
