@@ -6,6 +6,7 @@ import deliveryOptionRoutes from "./deliveryOptionRoutes.js";
 import cartRoutes from "./cartRoutes.js";
 import orderRoutes from "./orderRoutes.js";
 import resetRoutes from "./resetRoutes.js";
+import { getPaymentSummary } from "../controllers/cartControllers.js";
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ router.get("/", (req, res) => {
   res.send("Go to /users, /products, /images, /delivery-options, /cart-items, /orders, or /reset to see API routes");
 });
 
+router.get("/payment-summary", getPaymentSummary);
 
 router.use("/users", userRoutes);
 router.use("/products", productRoutes);

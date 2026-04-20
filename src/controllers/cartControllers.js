@@ -2,6 +2,7 @@ import CartItem from "../models/cart.js";
 import Product from "../models/product.js";
 import DeliveryOption from "../models/deliveryOption.js";
 
+const TAX_RATE = 0.1;
 
 const isValidCartItem = (item) => {
   if (!item || typeof item !== "object") {
@@ -47,6 +48,82 @@ export const getCart = async (req, res, next) => {
     }
 
     res.json({ success: true, data: cartItems });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getPaymentSummary = async (req, res, next) => {
+  try {
+    const cartItems = await CartItem.findAll();
+
+    if (cartItems.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          totalItems: 0,
+          productsCostCents: 0,
+          shippingCostCents: 0,
+          totalBeforeTaxCents: 0,
+          taxCents: 0,
+          totalCostCents: 0
+        }
+      });
+    }
+
+    const productIds = [...new Set(cartItems.map((item) => item.productId))];
+    const deliveryOptionIds = [...new Set(cartItems.map((item) => item.deliveryOptionId))];
+
+    const [products, deliveryOptions] = await Promise.all([
+      Product.findAll({ where: { id: productIds } }),
+      DeliveryOption.findAll({ where: { id: deliveryOptionIds } })
+    ]);
+
+    const productsById = new Map(products.map((product) => [product.id, product]));
+    const deliveryOptionsById = new Map(deliveryOptions.map((option) => [option.id, option]));
+
+    let totalItems = 0;
+    let productsCostCents = 0;
+    let shippingCostCents = 0;
+
+    for (const item of cartItems) {
+      const product = productsById.get(item.productId);
+      const deliveryOption = deliveryOptionsById.get(item.deliveryOptionId);
+
+      if (!product) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid productId in cart: ${item.productId}`
+        });
+      }
+
+      if (!deliveryOption) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid deliveryOptionId in cart: ${item.deliveryOptionId}`
+        });
+      }
+
+      totalItems += item.quantity;
+      productsCostCents += product.priceCents * item.quantity;
+      shippingCostCents += deliveryOption.priceCents;
+    }
+
+    const totalBeforeTaxCents = productsCostCents + shippingCostCents;
+    const totalCostCents = Math.round(totalBeforeTaxCents * (1 + TAX_RATE));
+    const taxCents = totalCostCents - totalBeforeTaxCents;
+
+    return res.json({
+      success: true,
+      data: {
+        totalItems,
+        productsCostCents,
+        shippingCostCents,
+        totalBeforeTaxCents,
+        taxCents,
+        totalCostCents
+      }
+    });
   } catch (err) {
     next(err);
   }
