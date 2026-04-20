@@ -4,6 +4,7 @@ import DeliveryOption from "../models/deliveryOption.js";
 import CartItem from "../models/cart.js";
 import { randomUUID } from "crypto";
 
+// Pricing constants used when building an order total and delivery estimate.
 const TAX_MULTIPLIER = 1.1;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
@@ -62,6 +63,63 @@ export const getOrders = async (req, res, next) => {
     }
 
     res.json({ success: true, data: orders });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getOrderById = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+
+    // Look up a single order by route param id.
+    const order = await Order.findByPk(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    // Optional expansion for a single order: attach full product details per line item.
+    if (String(req.query.expand || "").toLowerCase() === "products") {
+      const orderJson = order.toJSON();
+      const productIds = [
+        ...new Set(
+          (Array.isArray(orderJson.products) ? orderJson.products : []).map((item) => item.productId)
+        )
+      ];
+
+      const products = await Product.findAll({
+        where: {
+          id: productIds
+        }
+      });
+
+      const productsById = new Map(
+        products.map((product) => [product.id, product.toJSON()])
+      );
+
+      // Keep the order shape, but enrich each products[] item with product metadata.
+      const expandedOrder = {
+        ...orderJson,
+        products: (Array.isArray(orderJson.products) ? orderJson.products : []).map((item) => ({
+          ...item,
+          product: productsById.get(item.productId) || null
+        }))
+      };
+
+      return res.json({
+        success: true,
+        data: expandedOrder
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: order
+    });
   } catch (err) {
     next(err);
   }
