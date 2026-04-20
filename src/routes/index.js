@@ -19,6 +19,7 @@ router.use("/products", productRoutes);
 router.use("/images", imageRoutes);
 router.use("/delivery-options", deliveryOptionRoutes);
 router.use("/cart-items", cartRoutes);
+router.use("/cart-item", cartRoutes);
 
 
 export default router;

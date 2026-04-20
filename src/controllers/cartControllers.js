@@ -225,3 +225,26 @@ export const updateCartItem = async (req, res, next) => {
     next(err);
   }
 };
+
+export const deleteCartItem = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const cartItem = await CartItem.findByPk(productId);
+
+    if (!cartItem) {
+      return res.status(404).json({
+        success: false,
+        message: "Cart item not found"
+      });
+    }
+
+    await cartItem.destroy();
+
+    return res.status(200).json({
+      success: true,
+      data: cartItem
+    });
+  } catch (err) {
+    next(err);
+  }
+};
