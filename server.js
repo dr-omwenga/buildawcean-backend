@@ -5,11 +5,14 @@ import "./src/models/user.js";
 import "./src/models/product.js";
 import "./src/models/deliveryOption.js";
 import "./src/models/cart.js";
+import "./src/models/order.js";
 import Product from "./src/models/product.js";
 import DeliveryOption from "./src/models/deliveryOption.js";
 import CartItem from "./src/models/cart.js";
+import Order from "./src/models/order.js";
 import { defaultDeliveryOptions } from "./defaultData/defaultDeliveryOptions.js";
 import { defaultCart } from "./defaultData/defaultCart.js";
+import { defaultOrders } from "./defaultData/defaultOrders.js";
 import fs from "fs";
 
 dotenv.config();
@@ -52,6 +55,19 @@ if (cartItemCount === 0) {
     }
   } catch (error) {
     console.error("Error loading default cart:", error);
+  }
+}
+
+// Load default orders if empty
+const orderCount = await Order.count();
+if (orderCount === 0) {
+  try {
+    if (Array.isArray(defaultOrders) && defaultOrders.length > 0) {
+      await Order.bulkCreate(defaultOrders);
+      console.log("Default orders loaded into database");
+    }
+  } catch (error) {
+    console.error("Error loading default orders:", error);
   }
 }
 

@@ -4,13 +4,14 @@ import productRoutes from "./productRoutes.js";
 import imageRoutes from "./imageRoutes.js";
 import deliveryOptionRoutes from "./deliveryOptionRoutes.js";
 import cartRoutes from "./cartRoutes.js";
+import orderRoutes from "./orderRoutes.js";
 
 const router = express.Router();
 
 // For guidance on structuring routes,
 // see: https://expressjs.com/en/guide/routing.html
 router.get("/", (req, res) => {
-  res.send("Go to /users, /products, /images, or /delivery-options to see API routes");
+  res.send("Go to /users, /products, /images, /delivery-options, /cart-items, or /orders to see API routes");
 });
 
 
@@ -20,6 +21,7 @@ router.use("/images", imageRoutes);
 router.use("/delivery-options", deliveryOptionRoutes);
 router.use("/cart-items", cartRoutes);
 router.use("/cart-item", cartRoutes);
+router.use("/orders", orderRoutes);
 
 
 export default router;
