@@ -6,8 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import routes from "./routes/index.js";
-import userRoutes from "./routes/userRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
+import imageRoutes from "./routes/imageRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,9 +22,8 @@ app.use(morgan("dev"));
 app.use("/images", express.static(path.join(__dirname, "../images")));
 
 // Routes
-app.use("/", routes);
-app.use("/users", userRoutes);
-app.use("/products", productRoutes);
+app.use("/images", imageRoutes);
+app.use("/api", routes);
 
 // Error handler
 app.use(errorHandler);
