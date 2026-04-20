@@ -186,10 +186,10 @@ export const updateCartItem = async (req, res, next) => {
     }
 
     if (quantity !== undefined) {
-      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+      if (!Number.isInteger(quantity) || quantity < 1) {
         return res.status(400).json({
           success: false,
-          message: "quantity must be an integer between 1 and 10"
+          message: "quantity must be an integer greater than 0"
         });
       }
 
@@ -225,6 +225,8 @@ export const updateCartItem = async (req, res, next) => {
     next(err);
   }
 };
+
+
 
 export const deleteCartItem = async (req, res, next) => {
   try {
