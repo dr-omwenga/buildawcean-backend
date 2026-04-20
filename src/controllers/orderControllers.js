@@ -23,7 +23,9 @@ const isValidCartItem = (item) => {
 
 export const getOrders = async (req, res, next) => {
   try {
-    const orders = await Order.findAll();
+    const orders = await Order.findAll({
+      order: [["orderTimeMs", "DESC"]]
+    });
 
     // Optional expansion: attach full product details to each order line item.
     if (String(req.query.expand || "").toLowerCase() === "products") {
@@ -129,13 +131,13 @@ export const getOrderById = async (req, res, next) => {
 
 export const createOrder = async (req, res, next) => {
   try {
-    // Accept either a raw cart array body or { cart: [...] } body.
-    const cart = Array.isArray(req.body) ? req.body : req.body?.cart;
+    // Orders are always created from the persisted cart state in the database.
+    const cart = (await CartItem.findAll()).map((item) => item.toJSON());
 
     if (!Array.isArray(cart) || cart.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "cart must be a non-empty array"
+        message: "Cart is empty"
       });
     }
 
